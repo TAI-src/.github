@@ -35,7 +35,7 @@ jobs:
       - uses: mtkennerly/dunamai-action@v1
         with:
           env-var: MY_VERSION
-          args: --style semver
+          args: --style pep440 --format "{base}.{distance}" 
       - name: Change version
         run: |
           cd ${{ inputs.pkg-src }}
