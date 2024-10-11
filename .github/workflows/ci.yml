@@ -28,7 +28,6 @@ jobs:
           
   formatting:
     runs-on: ubuntu-latest
-    needs: build-and-test
     env:
       BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
     permissions:
@@ -36,8 +35,6 @@ jobs:
       # added or changed files to the repository and create PR
       contents: write
       pull-requests: write
-    outputs:
-        is_formatted: ${{ steps.action_black.outputs.is_formatted }}
     steps:
       - uses: actions/checkout@v4
       - name: Check files using the black formatter
@@ -57,11 +54,14 @@ jobs:
             uses the [psf/black](https://github.com/psf/black) formatter to fix these issues.
           base: ${{ github.head_ref }} # Creates pull request onto pull request or commit branch
           branch: black/${{ env.BRANCH_NAME }}
+        - name: Fail job if not formatted
+          if: steps.action_black.outputs.is_formatted == 'true'
+          run: |
+            echo "Merge black PR first"
+            exit 1          
 
   linting:
     runs-on: ubuntu-latest
-    needs: formatting
-    if: needs.formatting.outputs.is_formatted != 'true' #Only run if formatting is happy
     steps:
       - uses: actions/checkout@v4
       - name: Python Linter
