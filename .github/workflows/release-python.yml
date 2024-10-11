@@ -36,6 +36,7 @@ jobs:
         with:
           env-var: MY_VERSION
           args: --style semver
+      - name: Change version
         run: |
           cd ${{ inputs.pkg-src }}
           sed -i '/__version__ = /s/.*/__version__ = "'${MY_VERSION}'"/' setup.py
