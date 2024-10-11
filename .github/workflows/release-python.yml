@@ -45,7 +45,6 @@ jobs:
           commit_message: Push new version
 
   release-build:
-    needs: bump-version
     if: github.triggering_actor == 'auto-cid'
     runs-on: ubuntu-latest
     steps:
