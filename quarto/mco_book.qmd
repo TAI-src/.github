@@ -1,0 +1,18 @@
+---
+title: "MCO Book example"
+format:
+  html:
+    code-fold: true
+jupyter: python3
+---
+
+Scalarisation example
+
+```{python}
+#| label: fig-scale
+#| fig-cap: "Scalarisation example"
+
+
+
+
+```
