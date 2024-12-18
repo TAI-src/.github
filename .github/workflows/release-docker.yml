@@ -21,6 +21,8 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       - uses: actions/checkout@v4
+        with:
+          submodules: true
       - name: Build and push
         run: |
           cd ${{ inputs.docker-dir }}
