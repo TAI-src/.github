@@ -20,7 +20,7 @@ jobs:
           ls -l
           cd docker
           touch .env
-          docker compose up ${{ inputs.docker-service }}
+          docker compose up --force-recreate ${{ inputs.docker-service }}
       - name: Test with pytest
         timeout-minutes: 5
         run: |
