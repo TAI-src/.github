@@ -1,24 +1,10 @@
 [
   {
-    "objectID": "hello.html",
-    "href": "hello.html",
-    "title": "Quarto Basics",
-    "section": "",
-    "text": "For a demonstration of a line plot on a polar axis, see Figure 1.\n\n\nCode\nimport numpy as np\nimport matplotlib.pyplot as plt\n\nr = np.arange(0, 2, 0.01)\ntheta = 2 * np.pi * r\nfig, ax = plt.subplots(\n  subplot_kw = {'projection': 'polar'} \n)\nax.plot(theta, r)\nax.set_rticks([0.5, 1, 1.5, 2])\nax.grid(True)\nplt.show()\n\n\n\n\n\n\n\n\nFigure 1: A line plot on a polar axis\n\n\n\n\n\nA demonstration of an interactive plot Figure 2\n\n\nCode\nimport plotly.graph_objects as go\nimport numpy as np\n\n# Create figure\nfig = go.Figure()\n\n# Add traces, one for each slider step\nfor step in np.arange(0, 5, 0.1):\n    fig.add_trace(\n        go.Scatter(\n            visible=False,\n            line=dict(color=\"#00CED1\", width=6),\n            name=\"𝜈 = \" + str(step),\n            x=np.arange(0, 10, 0.01),\n            y=np.sin(step * np.arange(0, 10, 0.01))))\n\n# Make 10th trace visible\nfig.data[10].visible = True\n\n# Create and add slider\nsteps = []\nfor i in range(len(fig.data)):\n    step = dict(\n        method=\"update\",\n        args=[{\"visible\": [False] * len(fig.data)},\n              {\"title\": \"Slider switched to step: \" + str(i)}],  # layout attribute\n    )\n    step[\"args\"][0][\"visible\"][i] = True  # Toggle i'th trace to \"visible\"\n    steps.append(step)\n\nsliders = [dict(\n    active=10,\n    currentvalue={\"prefix\": \"Frequency: \"},\n    pad={\"t\": 50},\n    steps=steps\n)]\n\nfig.update_layout(\n    sliders=sliders\n)\n\nfig.show()\n\n\n\n\n                                                \n\n\nFigure 2: An interactive plot"
-  },
-  {
     "objectID": "mco_book_3.html",
     "href": "mco_book_3.html",
     "title": "MCO Book 3d example",
     "section": "",
     "text": "Scalarisation example\n\n\nCode\n# x and y given as array_like objects\nimport plotly.graph_objects as go\nimport numpy as np\n\nfig = go.Figure()\n\npoints = [(x, 1/x**2) for x in range(1,4)]\npoints += [(x, 1/x**2) for x in [1.2,1.5]]\npoints += [(x-0.2, 1/(x-0.5)**2-0.05) for x in [2]]\npx = [x for x,y in points]\npy = [y for x,y in points]\nfig.add_trace(\n  go.Scatter3d(visible=True, x=px, y=py, z=[0]*len(px), mode=\"markers\")\n)\ns = 0.75\nfor x in np.arange(1, 3, 0.1):\n  y = 1/x**2\n  grad = -2/x**3\n  d = x-s\n  tx = [x-d, x-y/grad]\n  ty = [y-d*grad, 0]\n  fig.add_trace(\n    go.Scatter3d(visible=False, x=tx, y=ty, z=[0]*len(tx))\n  )\nfig.data[1].visible = True\n\n# create and add slider\nsteps = []\nfor i in range(1, len(fig.data)):\n  step = dict(\n    method=\"update\",\n    args = [{\"visible\": [False]*len(fig.data)}]\n  )\n  step[\"args\"][0][\"visible\"][i] = True\n  step[\"args\"][0][\"visible\"][0] = True\n  steps.append(step)\n\nsliders = [dict(\n    active=1,\n    currentvalue={\"prefix\": \"Frequency: \"},\n    pad={\"t\": 50},\n    steps=steps\n)]\n\nfig.update_layout(\n    sliders=sliders\n)\n#fig[\"layout\"][\"xaxis\"].update(autorange=False)\n#fig[\"layout\"][\"yaxis\"].update(autorange=False)\n\nfig.show()\n\n\n\n\n                                                \n\n\nFigure 1: Scalarisation 3d example"
-  },
-  {
-    "objectID": "mco_book.html",
-    "href": "mco_book.html",
-    "title": "MCO Book example",
-    "section": "",
-    "text": "Scalarisation example\n\n\nCode\n# x and y given as array_like objects\nimport plotly.graph_objects as go\nimport numpy as np\n\nfig = go.Figure()\n\npoints = [(x, 1/x**2) for x in range(1,4)]\npoints += [(x, 1/x**2) for x in [1.2,1.5]]\npoints += [(x-0.2, 1/(x-0.5)**2-0.05) for x in [2]]\npx = [x for x,y in points]\npy = [y for x,y in points]\nfig.add_trace(\n  go.Scatter(visible=True, x=px, y=py, mode=\"markers\")\n)\ns = 0.75\nfor x in np.arange(1, 3, 0.1):\n  y = 1/x**2\n  grad = -2/x**3\n  d = x-s\n  tx = [x-d, x-y/grad]\n  ty = [y-d*grad, 0]\n  fig.add_trace(\n    go.Scatter(visible=False, x=tx, y=ty)\n  )\nfig.data[1].visible = True\n\n# create and add slider\nsteps = []\nfor i in range(1, len(fig.data)):\n  step = dict(\n    method=\"update\",\n    args = [{\"visible\": [False]*len(fig.data)}]\n  )\n  step[\"args\"][0][\"visible\"][i] = True\n  step[\"args\"][0][\"visible\"][0] = True\n  steps.append(step)\n\nsliders = [dict(\n    active=1,\n    currentvalue={\"prefix\": \"Frequency: \"},\n    pad={\"t\": 50},\n    steps=steps\n)]\n\nfig.update_layout(\n    sliders=sliders\n)\n#fig[\"layout\"][\"xaxis\"].update(autorange=False)\n#fig[\"layout\"][\"yaxis\"].update(autorange=False)\n\nfig.show()\n\n\n\n\n                                                \n\n\nFigure 1: Scalarisation example"
   },
   {
     "objectID": "index.html",
@@ -33,5 +19,19 @@
     "title": "About",
     "section": "",
     "text": "About this site"
+  },
+  {
+    "objectID": "hello.html",
+    "href": "hello.html",
+    "title": "Quarto Basics",
+    "section": "",
+    "text": "For a demonstration of a line plot on a polar axis, see Figure 1.\n\n\nCode\nimport numpy as np\nimport matplotlib.pyplot as plt\n\nr = np.arange(0, 2, 0.01)\ntheta = 2 * np.pi * r\nfig, ax = plt.subplots(\n  subplot_kw = {'projection': 'polar'} \n)\nax.plot(theta, r)\nax.set_rticks([0.5, 1, 1.5, 2])\nax.grid(True)\nplt.show()\n\n\n\n\n\n\n\n\nFigure 1: A line plot on a polar axis\n\n\n\n\n\nA demonstration of an interactive plot Figure 2\n\n\nCode\nimport plotly.graph_objects as go\nimport numpy as np\n\n# Create figure\nfig = go.Figure()\n\n# Add traces, one for each slider step\nfor step in np.arange(0, 5, 0.1):\n    fig.add_trace(\n        go.Scatter(\n            visible=False,\n            line=dict(color=\"#00CED1\", width=6),\n            name=\"𝜈 = \" + str(step),\n            x=np.arange(0, 10, 0.01),\n            y=np.sin(step * np.arange(0, 10, 0.01))))\n\n# Make 10th trace visible\nfig.data[10].visible = True\n\n# Create and add slider\nsteps = []\nfor i in range(len(fig.data)):\n    step = dict(\n        method=\"update\",\n        args=[{\"visible\": [False] * len(fig.data)},\n              {\"title\": \"Slider switched to step: \" + str(i)}],  # layout attribute\n    )\n    step[\"args\"][0][\"visible\"][i] = True  # Toggle i'th trace to \"visible\"\n    steps.append(step)\n\nsliders = [dict(\n    active=10,\n    currentvalue={\"prefix\": \"Frequency: \"},\n    pad={\"t\": 50},\n    steps=steps\n)]\n\nfig.update_layout(\n    sliders=sliders\n)\n\nfig.show()\n\n\n\n\n                                                \n\n\nFigure 2: An interactive plot"
+  },
+  {
+    "objectID": "mco_book.html",
+    "href": "mco_book.html",
+    "title": "MCO Book example",
+    "section": "",
+    "text": "Scalarisation example Test\n\n\nCode\n# x and y given as array_like objects\nimport plotly.graph_objects as go\nimport numpy as np\n\nfig = go.Figure()\n\npf_points = [(x, 1/x**2) for x in range(1,4)]\npf_points += [(x, 1/x**2) for x in [1.2,1.5]]\nnd_points = [(x-0.2, 1/(x-0.5)**2-0.05) for x in [2]]\npoints = pf_points + nd_points\npx = [x for x,y in points]\npy = [y for x,y in points]\nfig.add_trace(\n  go.Scatter(visible=True, x=px, y=py, mode=\"markers\")\n)\ns = 0.75\nsteps = []\nfor x in np.arange(0.9, 3.1, 0.05):\n  y = 1/x**2\n  grad = -2/x**3\n  d = x-s\n  tx = [x-d, x-y/grad]\n  ty = [y-d*grad, 0]\n  fig.add_trace(\n    go.Scatter(visible=False, x=tx, y=ty)\n  )\n  traces = [len(fig.data)-1]\n  if round(x,2) in [pf_x for pf_x,_ in pf_points]:\n    fig.add_trace(\n      go.Scatter(visible=False, x=[x], y=[y], mode=\"markers\")\n    )\n    traces+= [len(fig.data)-1]\n  steps.append({\"grad\": grad, \"traces\": traces})\n\n# create and add slider\nfor i, meta_data in enumerate(steps):\n  step = dict(\n    method=\"update\",\n    args = [{\"visible\": [False]*len(fig.data)}],\n    #label=f\"{meta_data['grad']:.2f}\",\n    label=meta_data[\"grad\"],\n    value= meta_data[\"grad\"],\n  )\n  for trace in meta_data[\"traces\"]:\n    step[\"args\"][0][\"visible\"][trace] = True\n  step[\"args\"][0][\"visible\"][0] = True\n  steps[i] = step\n\nsliders = [dict(\n    active=2,\n    currentvalue={\"prefix\": \"Gradient: \", \"font\": {\"color\": \"black\"}},\n    pad={\"t\": 50},\n    steps=steps,\n    tickcolor= \"white\",\n    font={\n    \"color\": \"white\"\n    },\n)]\n# Make step 10 visible\nvis_step = steps[2]\nfor i, trace in enumerate(vis_step[\"args\"][0][\"visible\"]):\n  fig.data[i].visible = trace\n\n\nfig.update_layout(\n    sliders=sliders\n)\nfig.update_layout(yaxis_range=(0.02, 1.48))\nfig.update_layout(xaxis_range=(0.77, 3.5))\nfig.update_layout(showlegend=False)\nfig.show()\n\n\n\n\n                                                \n\n\nFigure 1: Scalarisation example"
   }
 ]
