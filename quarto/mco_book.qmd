@@ -29,7 +29,7 @@ fig.add_trace(
 )
 s = 0.75
 steps = []
-for x in np.arange(0.9, 3.1, 0.01):
+for x in np.arange(0.9, 3.1, 0.05):
   y = 1/x**2
   grad = -2/x**3
   d = x-s
@@ -61,7 +61,7 @@ for i, meta_data in enumerate(steps):
   steps[i] = step
 
 sliders = [dict(
-    active=10,
+    active=2,
     currentvalue={"prefix": "Gradient: ", "font": {"color": "black"}},
     pad={"t": 50},
     steps=steps,
@@ -70,8 +70,10 @@ sliders = [dict(
     "color": "white"
     },
 )]
-#TODO: good starting values
-fig.data[10].visible=True
+# Make step 10 visible
+vis_step = steps[2]
+for i, trace in enumerate(vis_step["args"][0]["visible"]):
+  fig.data[i].visible = trace
 
 
 fig.update_layout(
