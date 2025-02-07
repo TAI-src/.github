@@ -6,7 +6,6 @@ on:
       docker-dir:
         required: true
         type: string
-    inputs:
       setup-path:
         required: true
         type: string
@@ -36,7 +35,7 @@ jobs:
       - name: get version
         id: get_version
         run: |
-          export VER=$(grep '__version__ *=' setup.py | sed -E "s/__version__ *= *['\"]([^'\"]*)['\"]/\1/")
+          export VER=$(grep '__version__ *=' ${{ inputs.setup-path }} | sed -E "s/__version__ *= *['\"]([^'\"]*)['\"]/\1/")
           echo "VER=$VER" >> "$GITHUB_OUTPUT"
       - name: Build and push version
         env:
