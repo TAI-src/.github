@@ -7,6 +7,10 @@ on:
       lint-src:
         required: true
         type: string
+      pretty:
+        required: false
+        type: boolean
+        default: true
 
 jobs:
   build-and-test:
@@ -15,18 +19,33 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: 'true'
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Set up build cache folder
+        run: mkdir -p /tmp/.buildx-cache
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
       - name: Build environment
         run: |
           ls -l
           cd docker
           touch .env
-          docker compose up --build --force-recreate ${{ inputs.docker-service }}
+          docker buildx create --use --name builder || true
+          docker buildx inspect --bootstrap
+          docker compose build ${{ inputs.docker-service }}
+          docker compose up ${{ inputs.docker-service }}
       - name: Test with pytest
         timeout-minutes: 5
         run: |
-          docker compose -f docker/docker-compose.yml run ${{ inputs.docker-service }} bash -c "python -m pytest -v -s --color=yes"
+          docker compose -f docker/docker-compose.yml run ${{ inputs.docker-service }} bash -c "pip install pytest; python -m pytest -v -s --color=yes"
           
   formatting:
+    if: ${{ inputs.pretty }}
     runs-on: ubuntu-latest
     env:
       BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
@@ -61,6 +80,7 @@ jobs:
           exit 1          
 
   linting:
+    if: ${{ inputs.pretty }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
