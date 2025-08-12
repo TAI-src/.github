@@ -7,6 +7,10 @@ on:
       lint-src:
         required: true
         type: string
+      pretty:
+        required: false
+        type: boolean
+        default: true
 
 jobs:
   build-and-test:
@@ -40,6 +44,7 @@ jobs:
           docker compose -f docker/docker-compose.yml run ${{ inputs.docker-service }} bash -c "pip install pytest; python -m pytest -v -s --color=yes"
           
   formatting:
+    if: ${{ inputs.pretty }}
     runs-on: ubuntu-latest
     env:
       BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
@@ -74,6 +79,7 @@ jobs:
           exit 1          
 
   linting:
+    if: ${{ inputs.pretty }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
