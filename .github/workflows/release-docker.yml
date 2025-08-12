@@ -43,7 +43,7 @@ jobs:
           touch .env
           docker buildx create --use --name builder || true
           docker buildx inspect --bootstrap
-          docker compose build --pull
+          docker compose build
           docker compose push
       - name: get version
         id: get_version
