@@ -59,7 +59,7 @@ jobs:
                 
                 echo "Found image: $img (base: $base, tag: $tag)"
                 echo "Pushing $img"
-                docker push "$img"
+                #docker push "$img"
                
                 # Only tag with version if untagged or latest
                 if [[ -z "$tag" || "$tag" == "$VER" || "$tag" == "latest" ]]; then
