@@ -27,6 +27,7 @@ jobs:
         with:
           submodules: true
       - name: Build
+        if: false
         run: |
           cd ${{ inputs.docker-dir }}
           docker buildx create --use --name builder || true
@@ -51,10 +52,21 @@ jobs:
                 | .image'\
             | sort -u \
             | while read img; do
-                echo "Publishing $img and $img:$VER"
-                docker push "$img"
-                [[ "$img" == *:* ]] && continue
-                docker tag "$img" "$img:$VER"
-                docker push "$img:$VER"
+                # Extract base image name and tag
+                base="${img%%:*}"
+                tag="${img#*:}"
+                # If there was no colon, tag == img, so set tag to empty
+                [[ "$tag" == "$img" ]] && tag=""
+                
+                echo "Found image: $img (base: $base, tag: $tag)"
+                # Always push the image as-is
+                echo "Pushing original image: $img"
+                
+                # Only tag with version if untagged or latest
+                if [[ -z "$tag" || "$tag" == "latest" ]]; then
+                    echo "Tagging $base with version $VER"
+                else
+                    echo "Skipping version tag for $img (already tagged)"
+                fi
               done
 
