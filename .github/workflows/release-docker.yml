@@ -45,10 +45,12 @@ jobs:
           VER: ${{ steps.get_version.outputs.VER }}
         run: |
             cd ${{ inputs.docker-dir }}
+            touch .env
             docker compose config \
             | yq -r '.services[]
                 | select(.build != null)
-                | .image' \
+                | .image
+                | select(test(":") | not)'\
             | sort -u \
             | while read img; do
                 echo "Publishing $img and $img:$VER"
