@@ -27,7 +27,6 @@ jobs:
         with:
           submodules: true
       - name: Build
-        if: false
         run: |
           cd ${{ inputs.docker-dir }}
           docker buildx create --use --name builder || true
