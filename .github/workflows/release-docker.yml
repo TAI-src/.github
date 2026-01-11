@@ -58,31 +58,16 @@ jobs:
                 [[ "$tag" == "$img" ]] && tag=""
                 
                 echo "Found image: $img (base: $base, tag: $tag)"
+                echo "Pushing $img"
+                docker push "$img"
                
                 # Only tag with version if untagged or latest
                 if [[ -z "$tag" || "$tag" == "$VER" || "$tag" == "latest" ]]; then
-                    echo "Push base $base:latest"
-                    #docker tag "$img" "$base:latest"
-                    #docker push "$base:latest"
-                    echo "Push $base:$tag"
-                    #docker tag "$img" "$base:$tag"
-                    #docker push "$base:$tag"
+                    echo "Push $base:$VER"
+                    #docker tag "$img" "$base:$VER"
+                    #docker push "$base:$VER"
                 else
-                    base_tag="${tag%%-*}"
-                    tag_tag="${tag#*-}"
-                    # if there was no version on the tag, set tag_tag to empty
-                    [[ "$tag_tag" == "$tag" ]] && tag_tag=""
-                    if [[ -z "$tag_tag" || "$tag_tag" == "$VER" ]]; then
-                        echo "push base $base:$base_tag"
-                        #docker tag "$img" "$base:$base_tag"
-                        #docker push "$base:$base_tag"
-                        echo "push $base:$base_tag-$VER"
-                        #docker tag "$img" "$base:$base_tag-$VER"
-                        #docker push "$base:$base_tag-$VER"
-                    else
-                        echo "push $img"
-                        #docker push "$img"
-                    fi
+                    echo "Push $img-$VER"
                 fi
               done
 
