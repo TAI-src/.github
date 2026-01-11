@@ -33,7 +33,7 @@ jobs:
           docker buildx create --use --name builder || true
           docker buildx inspect --bootstrap
           IMG=$(docker compose build --quiet jaix)
-          echo IMG=$IMG" >> "$GITHUB_OUTPUT" 
+          echo "IMG=$IMG" >> "$GITHUB_OUTPUT" 
       - name: get version
         id: get_version
         run: |
