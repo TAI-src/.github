@@ -27,62 +27,37 @@ jobs:
         with:
           submodules: true
       - name: Build
+        id: build
         run: |
           cd ${{ inputs.docker-dir }}
           docker buildx create --use --name builder || true
           docker buildx inspect --bootstrap
-          docker compose build
+          IMG=$(docker compose build --quiet jaix)
+          echo IMG=$IMG" >> "$GITHUB_OUTPUT" 
       - name: get version
         id: get_version
         run: |
           export VER=$(grep '__version__ *=' ${{ inputs.setup-path }} | sed -E "s/__version__ *= *['\"]([^'\"]*)['\"]/\1/")
           echo "VER=$VER" >> "$GITHUB_OUTPUT"         
-      - name: Install yq
-        uses: mikefarah/yq@v4
-      - name: push latest and VER
+      - name: push latest and VER based on local images
         env:
           VER: ${{ steps.get_version.outputs.VER }}
+          IMG: ${{ steps.build.outputs.IMG }}
         run: |
-            cd ${{ inputs.docker-dir }}
-            touch .env
-            docker compose config \
-            | yq -r '.services[]
-                | select(.build != null)
-                | .image'\
-            | sort -u \
-            | while read img; do
-                # Extract base image name and tag
-                base="${img%%:*}"
-                tag="${img#*:}"
-                # If there was no colon, tag == img, so set tag to empty
-                [[ "$tag" == "$img" ]] && tag=""
+            for img in $IMG; do
+                # Split repo and tag
+                repo="${img%%:*}"
+                tag="${img##*:}"
                 
-                echo "Found image: $img (base: $base, tag: $tag)"
+                echo "Found image: $img (repo: $repo, tag: $tag)"
                
+                echo "Push $img"               
                 # Only tag with version if untagged or latest
-                if [[ -z "$tag" || "$tag" == "$VER" || "$tag" == "latest" ]]; then
-                    echo "Push base $base:latest"
-                    docker tag "$img" "$base:latest"
-                    docker push "$base:latest"
-                    echo "Push $base:$tag"
-                    docker tag "$img" "$base:$tag"
-                    docker push "$base:$tag"
+                if [[ "$tag" == "latest" || "$tag" == "<none>" ]]; then
+                    echo "Push $repo:$VER"
                 else
-                    base_tag="${tag%%-*}"
-                    tag_tag="${tag#*-}"
-                    # if there was no version on the tag, set tag_tag to empty
-                    [[ "$tag_tag" == "$tag" ]] && tag_tag=""
-                    if [[ -z "$tag_tag" || "$tag_tag" == "$VER" ]]; then
-                        echo "push base $base:$base_tag"
-                        docker tag "$img" "$base:$base_tag"
-                        docker push "$base:$base_tag"
-                        echo "push $base:$base_tag-$VER"
-                        docker tag "$img" "$base:$base_tag-$VER"
-                        docker push "$base:$base_tag-$VER"
-                    else
-                        echo "push $img"
-                        docker push "$img"
-                    fi
+                    echo "Push $img-$VER"
                 fi
               done
+
 
