@@ -27,7 +27,6 @@ jobs:
         with:
           submodules: true
       - name: Build
-        if: false
         run: |
           cd ${{ inputs.docker-dir }}
           docker buildx create --use --name builder || true
@@ -59,15 +58,17 @@ jobs:
                 
                 echo "Found image: $img (base: $base, tag: $tag)"
                 echo "Pushing $img"
-                #docker push "$img"
+                docker push "$img"
                
                 # Only tag with version if untagged or latest
                 if [[ -z "$tag" || "$tag" == "$VER" || "$tag" == "latest" ]]; then
                     echo "Push $base:$VER"
-                    #docker tag "$img" "$base:$VER"
-                    #docker push "$base:$VER"
+                    docker tag "$img" "$base:$VER"
+                    docker push "$base:$VER"
                 else
                     echo "Push $img-$VER"
+                    docker tag "$img" "$img-$VER"
+                    docker push "$img-$VER"
                 fi
               done
 
