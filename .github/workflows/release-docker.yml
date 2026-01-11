@@ -26,18 +26,18 @@ jobs:
       - uses: actions/checkout@v4
         with:
           submodules: true
-      - name: get version
-        id: get_version
-        run: |
-          export VER=$(grep '__version__ *=' ${{ inputs.setup-path }} | sed -E "s/__version__ *= *['\"]([^'\"]*)['\"]/\1/")
-          echo "VER=$VER" >> "$GITHUB_OUTPUT"         
-      - uses: mikefarah/yq@v4
       - name: Build
         run: |
           cd ${{ inputs.docker-dir }}
           docker buildx create --use --name builder || true
           docker buildx inspect --bootstrap
           docker compose build
+     - name: get version
+        id: get_version
+        run: |
+          cd ${{ inputs.docker-dir }}
+          export VER=$(grep '__version__ *=' ${{ inputs.setup-path }} | sed -E "s/__version__ *= *['\"]([^'\"]*)['\"]/\1/")
+          echo "VER=$VER" >> "$GITHUB_OUTPUT"         
       - name: Install yq
         uses: mikefarah/yq@v4
       - name: push latest and VER
@@ -45,7 +45,6 @@ jobs:
           VER: ${{ steps.get_version.outputs.VER }}
         run: |
             cd ${{ inputs.docker-dir }}
-            touch .env
             docker compose config \
             | yq -r '.services[]
                 | select(.build != null)
@@ -55,6 +54,7 @@ jobs:
             | while read img; do
                 echo "Publishing $img and $img:$VER"
                 docker push "$img"
+                [[ "$img" == *:* ]] && continue
                 docker tag "$img" "$img:$VER"
                 docker push "$img:$VER"
               done
