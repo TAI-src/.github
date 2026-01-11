@@ -38,8 +38,9 @@ jobs:
           docker buildx create --use --name builder || true
           docker buildx inspect --bootstrap
           docker compose build
-      - name: Tag & push
+      - name: Install yq
         uses: mikefarah/yq@v4
+      - name: push latest and VER
         env:
           VER: ${{ steps.get_version.outputs.VER }}
         run: |
