@@ -27,6 +27,7 @@ jobs:
         with:
           submodules: true
       - name: Build
+        if: false
         run: |
           cd ${{ inputs.docker-dir }}
           docker buildx create --use --name builder || true
@@ -35,7 +36,6 @@ jobs:
       - name: get version
         id: get_version
         run: |
-          cd ${{ inputs.docker-dir }}
           export VER=$(grep '__version__ *=' ${{ inputs.setup-path }} | sed -E "s/__version__ *= *['\"]([^'\"]*)['\"]/\1/")
           echo "VER=$VER" >> "$GITHUB_OUTPUT"         
       - name: Install yq
@@ -45,6 +45,7 @@ jobs:
           VER: ${{ steps.get_version.outputs.VER }}
         run: |
             cd ${{ inputs.docker-dir }}
+            touch .env
             docker compose config \
             | yq -r '.services[]
                 | select(.build != null)
