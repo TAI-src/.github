@@ -65,7 +65,15 @@ jobs:
                     echo "Push base $base"
                     echo "Push $base:$tag"
                 else
-                    echo "push $img"
+                    base_tag="${tag%%-*}"
+                    tag_tag="${tag#*-}"
+                    # if there was no version on the tag, set tag_tag to empty
+                    [[ "$tag_tag" == "$tag" ]] && tag_tag=""
+                    if [[ -z "$tag_tag" || "$tag_tag" == "$VER" ]]; then
+                        echo "push base $base:$base_tag"
+                        echo "push $base:$base_tag-$VER"
+                    else
+                        echo "push $img"
                 fi
               done
 
