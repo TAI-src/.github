@@ -32,7 +32,7 @@ jobs:
           docker buildx create --use --name builder || true
           docker buildx inspect --bootstrap
           docker compose build
-     - name: get version
+      - name: get version
         id: get_version
         run: |
           cd ${{ inputs.docker-dir }}
@@ -48,8 +48,7 @@ jobs:
             docker compose config \
             | yq -r '.services[]
                 | select(.build != null)
-                | .image
-                | select(test(":") | not)'\
+                | .image'\
             | sort -u \
             | while read img; do
                 echo "Publishing $img and $img:$VER"
