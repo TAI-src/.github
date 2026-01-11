@@ -59,14 +59,13 @@ jobs:
                 [[ "$tag" == "$img" ]] && tag=""
                 
                 echo "Found image: $img (base: $base, tag: $tag)"
-                # Always push the image as-is
-                echo "Pushing original image: $img"
-                
+               
                 # Only tag with version if untagged or latest
-                if [[ -z "$tag" || "$tag" == "latest" ]]; then
-                    echo "Tagging $base with version $VER"
+                if [[ -z "$tag" || "$tag" == "$VER" || "$tag" == "latest" ]]; then
+                    echo "Push base $base"
+                    echo "Push $base:$tag"
                 else
-                    echo "Skipping version tag for $img (already tagged)"
+                    echo "push $img"
                 fi
               done
 
