@@ -74,6 +74,7 @@ jobs:
                         echo "push $base:$base_tag-$VER"
                     else
                         echo "push $img"
+                    fi
                 fi
               done
 
