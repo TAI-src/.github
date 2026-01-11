@@ -37,27 +37,49 @@ jobs:
           key: ${{ runner.os }}-buildx-${{ github.sha }}
           restore-keys: |
             ${{ runner.os }}-buildx-
-          
-      - name: Build and push latest
+      - name: Build
         run: |
           cd ${{ inputs.docker-dir }}
           touch .env
           docker buildx create --use --name builder || true
           docker buildx inspect --bootstrap
           docker compose build
-          docker compose push
       - name: get version
         id: get_version
         run: |
           export VER=$(grep '__version__ *=' ${{ inputs.setup-path }} | sed -E "s/__version__ *= *['\"]([^'\"]*)['\"]/\1/")
-          echo "VER=$VER" >> "$GITHUB_OUTPUT"
-      - name: Build and push version
-        env:
-          VER: ${{ steps.get_version.outputs.VER }}
+          echo "VER=$VER" >> "$GITHUB_OUTPUT"         
+      - name: Install yq
+        uses: mikefarah/yq@v4
+      - name: push latest and VER
         run: |
-          cd ${{ inputs.docker-dir }}
-          touch .env
-          docker buildx create --use --name builder || true
-          docker buildx inspect --bootstrap
-          docker compose build
-          docker compose push
+            cd ${{ inputs.docker-dir }}
+            touch .env
+            VER=${{ steps.get_version.outputs.VER }}
+            docker compose config \
+            | yq -r '.services[]
+                | select(.build != null)
+                | .image'\
+            | sort -u \
+            | while read img; do
+                # Extract base image name and tag
+                base="${img%%:*}"
+                tag="${img#*:}"
+                # If there was no colon, tag == img, so set tag to empty
+                [[ "$tag" == "$img" ]] && tag=""
+                
+                echo "Found image: $img (base: $base, tag: $tag)"
+                echo "Pushing $img"
+                docker push "$img"
+               
+                # Only tag with version if untagged or latest
+                if [[ -z "$tag" || "$tag" == "$VER" || "$tag" == "latest" ]]; then
+                    echo "Push $base:$VER"
+                    docker tag "$img" "$base:$VER"
+                    docker push "$base:$VER"
+                else
+                    echo "Push $img-$VER"
+                    docker tag "$img" "$img-$VER"
+                    docker push "$img-$VER"
+                fi
+              done
