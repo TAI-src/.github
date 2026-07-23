@@ -98,7 +98,7 @@ jobs:
           fi
 
           pretty_ok=true
-          if [[ "${{ inputs.pretty }}" ]]; then
+          if [[ "${{ inputs.pretty }}" == "true" ]]; then
             if [[ "${{ needs.formatting.result }}" != "success" ||
                 "${{ needs.linting.result }}" != "success" ]]; then
               pretty_ok=false
@@ -106,8 +106,8 @@ jobs:
           fi
 
           if [[ "$build_ok" == "true" && "$pretty_ok" == "true" ]]; then
+            echo "CI requirements fulfilled"
+          else
             echo "CI requirements not fulfilled"
             exit 1
-          else
-            echo "CI requirements fulfilled"
           fi
