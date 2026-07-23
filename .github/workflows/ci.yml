@@ -109,4 +109,4 @@ jobs:
           source: ${{ inputs.lint-src }}
           strict: "low"
           pylint-options: "--disable=W0511" #Disables (fix-me) generated from #TODOs
-          mypy-options: "--ignore-missing-imports --show-error-codes"
+          mypy-options: "--ignore-missing-imports --show-error-codes --python-version 3.12"
