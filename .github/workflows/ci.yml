@@ -22,6 +22,7 @@ on:
         type: string
         default: "3.12"
 
+
 jobs:
   detect-uv:
     runs-on: ubuntu-latest
@@ -72,3 +73,40 @@ jobs:
       python-version: ${{ inputs.python-version }}
     secrets: inherit
 
+  status:
+    if: ${{ always() }}
+    needs:
+      - build-and-test-uv
+      - build-and-test-docker
+      - formatting
+      - linting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check status
+        shell: bash
+        run: |
+          echo "UV: ${{ needs.build-and-test-uv.result }}"
+          echo "Docker: ${{ needs.build-and-test-docker.result }}"
+          echo "Formatting: ${{ needs.formatting.result }}"
+          echo "Linting: ${{ needs.linting.result }}"
+
+          build_ok=false
+          if [[ "${{ needs.build-and-test-uv.result }}" == "success" ||
+              "${{ needs.build-and-test-docker.result }}" == "success" ]]; then
+            build_ok=true
+          fi
+
+          pretty_ok=true
+          if [[ "${{ inputs.pretty }}" == "true" ]]; then
+            if [[ "${{ needs.formatting.result }}" != "success" ||
+                "${{ needs.linting.result }}" != "success" ]]; then
+              pretty_ok=false
+            fi
+          fi
+
+          if [[ "$build_ok" == "true" && "$pretty_ok" == "true" ]]; then
+            echo "CI requirements not fulfilled"
+            exit 1
+          else
+            echo "CI requirements fulfilled"
+          fi
