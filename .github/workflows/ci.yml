@@ -2,11 +2,13 @@ on:
   workflow_call:
     inputs:
       docker-service:
-        required: true
+        required: false
         type: string
+        default: ""
       lint-src:
-        required: true
+        required: false
         type: string
+        default: ""
       pretty:
         required: false
         type: boolean
@@ -15,98 +17,54 @@ on:
         required: false
         type: boolean
         default: false
+      python-version:
+        required: false
+        type: string
+        default: "3.12"
 
 jobs:
-  build-and-test:
+  detect-uv:
     runs-on: ubuntu-latest
+    outputs:
+      is_uv: ${{ steps.detect-uv.outputs.is_uv }}
     steps:
       - uses: actions/checkout@v4
-        with:
-          submodules: 'true'
-      - name: Set up Docker Buildx
-        if: ${{ !inputs.from-scratch }}
-        uses: docker/setup-buildx-action@v3
-      - name: Set up build cache folder
-        if: ${{ !inputs.from-scratch }}
-        run: mkdir -p /tmp/.buildx-cache
-      - name: Cache Docker layers
-        if: ${{ !inputs.from-scratch }}
-        uses: actions/cache@v4
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
-      - name: Prepare docker folder
-        working-directory: docker
+      - name: Detect uv
+        id: detect-uv
+        shell: bash
         run: |
-          touch .env
-      - name: Build environment from cache
-        working-directory: docker
-        if: ${{ !inputs.from-scratch }}
-        run: |
-          docker buildx create --use --name builder || true
-          docker buildx inspect --bootstrap
-          docker compose build ${{ inputs.docker-service }}
-      - name: Build all docker images from scratch
-        working-directory: docker
-        if: ${{ inputs.from-scratch }}
-        run: |
-          DOCKER_BUILDKIT=0 docker compose build --no-cache
-      - name: Start docker containers
-        working-directory: docker
-        run: |
-          docker compose up ${{ inputs.docker-service }}
-      - name: Test with pytest
-        timeout-minutes: 5
-        working-directory: docker
-        run: |
-          docker compose run ${{ inputs.docker-service }} bash -c "pip install pytest; python -m pytest -v -s --color=yes"
-          
+          if [[ -f "uv.lock" ]]; then
+            echo "is_uv=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_uv=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  build-and-test-uv:
+    needs: detect-uv
+    if: ${{ needs.detect-uv.outputs.is_uv == 'true' }}
+    uses: TAI-src/.github/.github/workflows/uv-build-and-test.yml@main
+
+
+  build-and-test-docker:
+    if: ${{ inputs.docker-service != '' }}
+    uses: TAI-src/.github/.github/workflows/docker-build-and-test.yml@main
+    with:
+      docker-service: ${{ inputs.docker-service }}
+      from-scratch: ${{ inputs.from-scratch }}
+
   formatting:
     if: ${{ inputs.pretty }}
-    runs-on: ubuntu-latest
-    env:
-      BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+    uses: TAI-src/.github/.github/workflows/format.yml@main
     permissions:
-      # Give the default GITHUB_TOKEN write permission to commit and push the
-      # added or changed files to the repository and create PR
       contents: write
       pull-requests: write
-    steps:
-      - uses: actions/checkout@v4
-      - name: Check files using the black formatter
-        uses: rickstaa/action-black@v1
-        id: action_black
-        with:
-          black_args: ". -t py37 -t py312"
-      - name: Create Pull Request
-        if: steps.action_black.outputs.is_formatted == 'true'
-        uses: peter-evans/create-pull-request@v7
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          title: "${{ env.BRANCH_NAME }} Format Python code with psf/black push"
-          commit-message: ":art: Format Python code with psf/black"
-          body: |
-            There appear to be some python formatting errors in ${{ github.sha }}. This pull request
-            uses the [psf/black](https://github.com/psf/black) formatter to fix these issues.
-          base: ${{ github.head_ref }} # Creates pull request onto pull request or commit branch
-          branch: black/${{ env.BRANCH_NAME }}
-      - name: Fail job if not formatted
-        if: steps.action_black.outputs.is_formatted == 'true'
-        run: |
-          echo "Needs formatting. Merge black PR"
-          exit 1          
 
   linting:
-    if: ${{ inputs.pretty }}
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Python Linter
-        uses: sunnysid3up/python-linter@master
-        with:
-          source: ${{ inputs.lint-src }}
-          strict: "low"
-          pylint-options: "--disable=W0511" #Disables (fix-me) generated from #TODOs
-          mypy-options: "--ignore-missing-imports --show-error-codes --python-version 3.12"
+    if: ${{ inputs.pretty && inputs.lint-src != '' }}
+    uses: TAI-src/.github/.github/workflows/lint.yml@main
+    permissions:
+      contents: read
+    with:
+      lint-src: ${{ inputs.lint-src }}
+      python-version: ${{ inputs.python-version }}
+
