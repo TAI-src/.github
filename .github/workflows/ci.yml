@@ -67,7 +67,8 @@ jobs:
     if: ${{ inputs.pretty && inputs.lint-src != '' }}
     uses: TAI-src/.github/.github/workflows/lint.yml@main
     permissions:
-      contents: read
+      contents: write
+      pull-requests: write
     with:
       lint-src: ${{ inputs.lint-src }}
       python-version: ${{ inputs.python-version }}
