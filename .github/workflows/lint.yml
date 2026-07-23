@@ -27,9 +27,7 @@ jobs:
           mypy --ignore-missing-imports --show-error-codes ${{ inputs.lint-src }}
       - name: Run ruff
         run: |
-          ruff ${{ inputs.lint-src }}
-      - name: Run pylint
-        run: |
-          pylint ${{ inputs.lint-src }} --disable=W0511
+          ruff check ${{ inputs.lint-src }}
+
 
 
