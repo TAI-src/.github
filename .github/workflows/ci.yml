@@ -89,6 +89,7 @@ jobs:
           echo "Docker: ${{ needs.build-and-test-docker.result }}"
           echo "Formatting: ${{ needs.formatting.result }}"
           echo "Linting: ${{ needs.linting.result }}"
+          echo "Pretty: ${{ inputs.pretty }}"
 
           build_ok=false
           if [[ "${{ needs.build-and-test-uv.result }}" == "success" ||
@@ -97,7 +98,7 @@ jobs:
           fi
 
           pretty_ok=true
-          if [[ "${{ inputs.pretty }}" == "true" ]]; then
+          if [[ "${{ inputs.pretty }}" ]]; then
             if [[ "${{ needs.formatting.result }}" != "success" ||
                 "${{ needs.linting.result }}" != "success" ]]; then
               pretty_ok=false
