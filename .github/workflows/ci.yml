@@ -43,6 +43,7 @@ jobs:
     needs: detect-uv
     if: ${{ needs.detect-uv.outputs.is_uv == 'true' }}
     uses: TAI-src/.github/.github/workflows/uv-build-and-test.yml@main
+    secrets: inherit
 
 
   build-and-test-docker:
@@ -51,6 +52,7 @@ jobs:
     with:
       docker-service: ${{ inputs.docker-service }}
       from-scratch: ${{ inputs.from-scratch }}
+    secrets: inherit
 
   formatting:
     if: ${{ inputs.pretty }}
@@ -58,6 +60,7 @@ jobs:
     permissions:
       contents: write
       pull-requests: write
+    secrets: inherit
 
   linting:
     if: ${{ inputs.pretty && inputs.lint-src != '' }}
@@ -67,4 +70,5 @@ jobs:
     with:
       lint-src: ${{ inputs.lint-src }}
       python-version: ${{ inputs.python-version }}
+    secrets: inherit
 
