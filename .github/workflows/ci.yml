@@ -1,6 +1,10 @@
 on:
   workflow_call:
     inputs:
+      skip_test:
+        required: false
+        type: boolean
+        default: false
       docker-service:
         required: false
         type: string
@@ -42,13 +46,13 @@ jobs:
 
   build-and-test-uv:
     needs: detect-uv
-    if: ${{ needs.detect-uv.outputs.is_uv == 'true' }}
+    if: ${{ !inputs.skip_test && needs.detect-uv.outputs.is_uv == 'true' }}
     uses: TAI-src/.github/.github/workflows/uv-build-and-test.yml@main
     secrets: inherit
 
 
   build-and-test-docker:
-    if: ${{ inputs.docker-service != '' }}
+    if: ${{ !inputs.skip_test && inputs.docker-service != '' }}
     uses: TAI-src/.github/.github/workflows/docker-build-and-test.yml@main
     with:
       docker-service: ${{ inputs.docker-service }}
@@ -93,8 +97,9 @@ jobs:
           echo "Pretty: ${{ inputs.pretty }}"
 
           build_ok=false
-          if [[ "${{ needs.build-and-test-uv.result }}" == "success" ||
-              "${{ needs.build-and-test-docker.result }}" == "success" ]]; then
+          if [[ "${{ inputs.skip_test }}" == "true" ||
+                "${{ needs.build-and-test-uv.result }}" == "success" ||
+                "${{ needs.build-and-test-docker.result }}" == "success" ]]; then
             build_ok=true
           fi
 
