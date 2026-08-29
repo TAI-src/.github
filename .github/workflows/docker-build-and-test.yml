@@ -58,5 +58,5 @@ jobs:
         timeout-minutes: 5
         working-directory: docker
         run: |
-          docker compose run ${{ inputs.docker-service }} bash -c "pip install pytest; python -m pytest -v -s --color=yes ${inputs.test-folders}"
+          docker compose run ${{ inputs.docker-service }} bash -c "pip install pytest; python -m pytest -v -s --color=yes ${{ inputs.test-folders }}"
           

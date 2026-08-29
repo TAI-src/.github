@@ -25,6 +25,10 @@ on:
         required: false
         type: string
         default: "3.12"
+      test-src:
+        required: false
+        type: string
+        default: "."
 
 
 jobs:
@@ -57,6 +61,7 @@ jobs:
     with:
       docker-service: ${{ inputs.docker-service }}
       from-scratch: ${{ inputs.from-scratch }}
+      test-folders: ${{ inputs.test-src }}
     secrets: inherit
 
   formatting:
