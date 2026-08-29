@@ -8,6 +8,10 @@ on:
         required: false
         type: boolean
         default: false
+      test-folders: # Space-separated list of folders to test relative to docker image workdir
+        required: false
+        type: string
+        default: "."
 
 jobs:
   build-and-test:
@@ -45,7 +49,7 @@ jobs:
         working-directory: docker
         if: ${{ inputs.from-scratch }}
         run: |
-          DOCKER_BUILDKIT=0 docker compose build --no-cache
+          DOCKER_BUILDKIT=1 docker compose build --no-cache --pull
       - name: Start docker containers
         working-directory: docker
         run: |
@@ -54,5 +58,5 @@ jobs:
         timeout-minutes: 5
         working-directory: docker
         run: |
-          docker compose run ${{ inputs.docker-service }} bash -c "pip install pytest; python -m pytest -v -s --color=yes"
+          docker compose run ${{ inputs.docker-service }} bash -c "pip install pytest; python -m pytest -v -s --color=yes ${inputs.test-folders}"
           
